@@ -1,6 +1,12 @@
 # devtun
 
-A simpler(?) replacement for `ngrok`
+A simpler(?) replacement for `ngrok`. This is how it works:
+
+1. Creates a temporary `nginx` configuration file on the host server for the specified subdomain and port
+2. Creates an SSH tunnel mapping the remote port to the corresponding local port
+3. Deletes the temporary `nginx` configuration file when you quit
+
+Though it's kind of hacky, it's easier for me to reason about and debug.
 
 ## Setup
 
