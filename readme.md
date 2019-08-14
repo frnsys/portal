@@ -59,11 +59,11 @@ And then run `python -m http.server 8000` and create the `.well-known/...` file 
 Once that's all setup, you can run:
 
 ```
-./expose.sh SUBDOMAIN PORT
+./portal SUBDOMAIN PORT
 ```
 
 For example, if running a local Flask server on port 3000 that you want to expose at `foobar.tun.publicscience.co`, run:
 
 ```
-./expose.sh foobar 3000
+./portal foobar 3000
 ```
