@@ -68,4 +68,4 @@ For example, if running a local Flask server on port 3000 that you want to expos
 ./portal 3000 foobar tun.publicscience.co
 ```
 
-It's helpful to think of it like directing traffic connecting local port `3000` _to_ `foobar.tun.publicscience.co`.
+It's helpful to think of it as connecting local port `3000` _to_ `foobar.tun.publicscience.co`.
