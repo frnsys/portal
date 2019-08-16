@@ -1,21 +1,47 @@
 #!/bin/bash
 set -e
 
-export HOST=tun.publicscience.co
-export SUBDOMAIN=$1
-export PORT=$2
+export PORT=$1
+export SUBDOMAIN=$2
+export HOST=$3
 
-if [[ -z "${SUBDOMAIN}" ]] || [[ -z "${PORT}" ]]; then
-    echo "Define SUBDOMAIN and PORT"
+if [[ -z "${PORT}" ]] || [[ -z "${SUBDOMAIN}" ]] || [[ -z "${HOST}" ]]; then
+    echo "Define PORT, SUBDOMAIN, and HOST"
     exit 1
 fi
 
-CONF=$(cat nginx.conf.template | envsubst '$SUBDOMAIN $PORT $HOST')
-ssh -t $HOST 'echo "'"$CONF"'" | sudo tee /etc/nginx/sites-enabled/'$SUBDOMAIN'.'$HOST'; sudo service nginx restart'
+
+CONF="server {
+    server_name $SUBDOMAIN.$HOST;
+
+    access_log /var/log/nginx/\$host;
+
+    listen 80;
+    listen 443 ssl;
+    ssl_certificate  /etc/letsencrypt/live/$HOST/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$HOST/privkey.pem;
+
+    location / {
+            proxy_pass http://localhost:$PORT/;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_redirect off;
+    }
+
+    error_page 502 /50x.html;
+    location = /50x.html {
+            root /usr/share/nginx/html;
+    }
+}"
+
+ssh -t $HOST "echo '$CONF' | sudo tee /etc/nginx/sites-enabled/'$SUBDOMAIN'.'$HOST'; sudo service nginx restart"
 
 function cleanup {
     ssh -t $HOST 'sudo rm /etc/nginx/sites-enabled/'$SUBDOMAIN'.'$HOST'; sudo service nginx restart'
 }
 trap cleanup EXIT
 
+echo "Forwarding..."
 ssh -N -R $PORT:localhost:$PORT $HOST
