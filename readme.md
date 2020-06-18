@@ -16,7 +16,7 @@ This example uses `tun.publicscience.co` as the host.
 
 (Using `certbot`)
 
-Setup your `nginx` conf:
+Setup your `nginx` conf, for example `/etc/nginx/conf.d/tun.publicscience.co.conf`:
 
 ```
 server {
@@ -40,19 +40,23 @@ server {
 }
 ```
 
-Start the certificate process:
+Note that this forwards requests to `localhost:3000`.
+
+Start the certificate process on the host:
 
 ```
 sudo certbot certonly --manual -d tun.publicscience.co -d *.tun.publicscience.co --server https://acme-v02.api.letsencrypt.org/directory
 ```
 
-Then follow the instructions. You will have to add a `TXT` record for `tun.publicscience.co` as well as create a file at `.well-known/...` (full path will be provided in the instructions). Since this example is actually port forwarding, on the local machine run:
+Then follow the instructions. You will have to add a `TXT` record for `tun.publicscience.co`.
+
+The other step requires a specific file, `.well-known/...` (full path will be provided in the instructions). It might be easiest to set up port forwarding to your local machine, such that requests to the host (which are passed to port 3000) are then forwarded to your local machine's port 8000:
 
 ```
 ssh -N -R 3000:localhost:8000 tun.publicscience.co
 ```
 
-And then run `python -m http.server 8000` and create the `.well-known/...` file in the folder you run that local server in.
+Then create the `.well-known/...` file locally. In the parent directory of the `.well-known` directory, run a local python server: `python -m http.server 8000` to serve this directory. Now you can complete the `certbot` process.
 
 ## Usage
 
